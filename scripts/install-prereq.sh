@@ -80,5 +80,6 @@ elif [ "${GETPM}" == "dnf" ]; then
   GCCLATEST=$(dnf repoquery --available --qf '%{name}' 'gcc-toolset-[0-9]*' | \
     grep -E '^gcc-toolset-[0-9]+$' | sort -V | tail -1)
   dnf -y install "$GCCLATEST" kernel-devel make git autoconf automake libtool git openssl openssl-devel cmake
+  scl enable "$GCCLATEST" bash
 fi
 exit 0
