@@ -1,25 +1,17 @@
 #update package from experimental-unstable-testing-current
 #usage: getpack "package1 package2..." max_level #1-testing, 2-unstable, 3-experimental
 getpack() {
-  pack=$1
+  local pack=$1
   local maxlvl="${2:-0}"
-  if [ $maxlvl -ge 3 ] && apt-get -sqq -t experimental install $pack 2>/dev/null | grep -qE "Inst ($(echo "$pack" | tr ' ' '|'))"; then
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t experimental install $pack
-  elif [ $maxlvl -ge 2 ] && apt-get -sqq -t unstable install $pack 2>/dev/null | grep -qE "Inst ($(echo "$pack" | tr ' ' '|'))"; then
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t unstable install $pack
-    if [ $maxlvl -ge 3 ]; then
-      DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t experimental install $pack
-    fi
-  elif [ $maxlvl -ge 1 ] && apt-get -sqq -t testing install $pack 2>/dev/null | grep -qE "Inst ($(echo "$pack" | tr ' ' '|'))"; then
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t testing install $pack
-    if [ $maxlvl -ge 2 ]; then
-      DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t unstable install $pack
-    fi
-    if [ $maxlvl -ge 3 ]; then
-      DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t experimental install $pack
-    fi
-  else
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" install $pack
+  DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" install $pack
+  if [ $maxlvl -ge 1 ]; then
+    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t testing install $pack
+  fi
+  if [ $maxlvl -ge 2 ]; then
+    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t unstable install $pack
+  fi
+  if [ $maxlvl -ge 3 ]; then
+    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t experimental install $pack
   fi
 }
 
@@ -28,14 +20,14 @@ getpack() {
 forcepack() {
   local pack=$1
   local maxlvl="${2:-0}"
-  DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" reinstall $pack
+  DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" reinstall $pack
   if [ $maxlvl -ge 1 ]; then
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t testing reinstall $pack
+    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t testing reinstall $pack
   fi
   if [ $maxlvl -ge 2 ]; then
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t unstable reinstall $pack
+    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t unstable reinstall $pack
   fi
   if [ $maxlvl -ge 3 ]; then
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t experimental reinstall $pack
+    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t experimental reinstall $pack
   fi
 }
