@@ -20,18 +20,19 @@ getpack() {
 forcepack() {
   local pack=$1
   local maxlvl="${2:-0}"
-  echo 'DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" reinstall $pack'
-  DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" reinstall $pack
+  echo "$pack"
+  echo 'DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" reinstall ${pack}'
+  DEBIAN_FRONTEND=noninteractive apt-get -v -y -o Dpkg::Options::="--force-confnew" reinstall $pack
   if [ $maxlvl -ge 1 ]; then
     echo 'DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t testing reinstall $pack'
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t testing reinstall $pack
+    DEBIAN_FRONTEND=noninteractive apt-get -v -y -o Dpkg::Options::="--force-confnew" -t testing reinstall $pack
   fi
   if [ $maxlvl -ge 2 ]; then
     echo 'DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t unstable reinstall $pack'
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t unstable reinstall $pack
+    DEBIAN_FRONTEND=noninteractive apt-get -v -y -o Dpkg::Options::="--force-confnew" -t unstable reinstall $pack
   fi
   if [ $maxlvl -ge 3 ]; then
     echo 'DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t experimental reinstall $pack'
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t experimental reinstall $pack
+    DEBIAN_FRONTEND=noninteractive apt-get -v -y -o Dpkg::Options::="--force-confnew" -t experimental reinstall $pack
   fi
 }
