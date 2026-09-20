@@ -160,7 +160,13 @@ jobs:
           dnf -y install epel-release
           dnf update
           dnf -y install gcc-c++
-          dnf -y install python3 python3-pip cargo rustc
+          PYLATEST=$(dnf list available 'python3.[0-9]*' 2>/dev/null | \
+            grep -E '^python3\.[0-9]+ ' | \
+            sort -V | \
+            tail -1 | \
+            awk '{print $1}' | \
+            sed 's/\.[^.]*$//')
+          dnf install -y "$PYLATEST" python3-pip cargo rustc
           #fpm optional
           dnf -y install ruby ruby-devel rpm-build squashfs-tools libffi-devel
           gem install fpm --no-document
