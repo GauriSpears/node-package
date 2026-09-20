@@ -45,9 +45,9 @@ EOF
     rm -rf /usr/local/ssl/lib
     rm -rf /root/openssl
     rm -rf /usr/bin/openssl
-    forcepack "openssl libssl-dev" 2
+    forcepack "openssl libssl3t64 libssl-dev" 2
   else
-    getpack "openssl libssl-dev" 2
+    getpack "openssl libssl3t64 libssl-dev" 2
   fi
   if ! $isupg; then
     rm -rf /usr/local/doc/cmake-*
@@ -80,6 +80,6 @@ elif [ "${GETPM}" == "dnf" ]; then
   GCCLATEST=$(dnf repoquery --available --qf '%{name}' 'gcc-toolset-[0-9]*' | \
     grep -E '^gcc-toolset-[0-9]+$' | sort -V | tail -1)
   dnf -y install "$GCCLATEST" kernel-devel make git autoconf automake libtool git openssl openssl-devel cmake
-  scl enable "$GCCLATEST" bash
+  source /opt/rh/${GCCLATEST}/enable
 fi
 exit 0
