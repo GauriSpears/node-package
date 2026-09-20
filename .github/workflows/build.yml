@@ -165,7 +165,7 @@ jobs:
           gem install fpm --no-document
 
       - name: Build Node.js from upstream master commit
-        run: bash scripts/build.sh
+        run: GETPM=dnf bash scripts/build.sh
 
       - name: Test
         run: bash scripts/test.sh
