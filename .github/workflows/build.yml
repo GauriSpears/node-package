@@ -140,9 +140,8 @@ jobs:
           #GETPM=pacman bash scripts/install-gost.sh
           pacman -Sy --needed --noconfirm python python-pip rust
           #fpm optional
-          pacman -Sy --needed --noconfirm ruby rubygems base-devel rpm-tools squashfs-tools
+          pacman -Sy --needed --noconfirm ruby ruby-erb base-devel rpm-tools squashfs-tools
           gem install fpm --no-document
-          echo "$(ruby -e 'puts Gem.user_dir')"
           if ! command -v fpm &>/dev/null; then
             GEM_HOME="$(ruby -e 'puts Gem.user_dir')/bin"
             export PATH="$PATH:$GEM_HOME"
