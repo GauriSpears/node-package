@@ -1,1 +1,217 @@
+name: Build Node.JS (upstream master)
 
+on:
+  schedule:
+    # Weekly Monday 03:15 UTC
+    - cron: '45 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      node_sha:
+        description: 'Node.JS commit SHA (empty = current main HEAD)'
+        required: false
+        default: ''
+      force:
+        description: 'Build even if a Release for this build_id already exists'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-node-main
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.up.outputs.sha }}
+      short: ${{ steps.up.outputs.short }}
+      build_id: ${{ steps.up.outputs.build_id }}
+      version: ${{ steps.up.outputs.version }}
+      should_build: ${{ steps.gate.outputs.should_build }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@main
+
+      - name: Install jq
+        run: sudo apt-get update -y && sudo apt-get install -y --no-install-recommends jq curl ca-certificates
+
+      - name: Resolve nodejs/node master (or input SHA)
+        id: up
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.node_sha }}" ]; then
+            SHA="${{ inputs.node_sha }}"
+            # normalize short/full
+            if [ ${#SHA} -lt 40 ]; then
+              API="https://api.github.com/repos/nodejs/node/commits/${SHA}"
+              SHA=$(curl -fsSL -H "Accept: application/vnd.github+json" \
+                -H "Authorization: Bearer $GITHUB_TOKEN" "$API" \
+                | jq -r .sha)
+            fi
+            SHORT="${SHA:0:12}"
+            BUILD_ID="${SHORT}"
+            VERSION="$(date +'%Y.%m.%d')-${SHORT}"
+            echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+            echo "short=$SHORT" >> "$GITHUB_OUTPUT"
+            echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          else
+            bash scripts/detect-node-main.sh | tee /tmp/up.env
+            grep -E '^(sha|short|build_id|version)=' /tmp/up.env >> "$GITHUB_OUTPUT"
+          fi
+          echo "Upstream build_id=$(grep build_id= "$GITHUB_OUTPUT" | tail -1)"
+
+      - name: Should we build?
+        id: gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          BID="${{ steps.up.outputs.build_id }}"
+          if [ "${{ inputs.force }}" = "true" ]; then
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if bash scripts/should-build.sh "$BID"; then
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve distro matrix (last + previous majors)
+        id: matrix
+        run: |
+          set -euo pipefail
+          MATRIX=$(bash scripts/resolve-matrix.sh)
+          echo "Matrix: $MATRIX"
+          # Compact single line for output
+          echo "matrix=$(jq -c . <<<"$MATRIX")" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: resolve
+    if: needs.resolve.outputs.should_build == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.resolve.outputs.matrix) }}
+
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.image }}
+      options: --user root
+
+    env:
+      node_sha: ${{ needs.resolve.outputs.sha }}
+      BUILD_ID: ${{ needs.resolve.outputs.build_id }}
+      VERSION: ${{ needs.resolve.outputs.version }}
+      DISTRO: ${{ matrix.distro }}
+      DISTRO_VERSION: ${{ matrix.version }}
+      BUILD_ROOT: /work/build
+      OUT_DIR: /work/out
+      DEBIAN_FRONTEND: noninteractive
+
+    steps:
+      - uses: actions/checkout@main
+
+      - name: Install build dependencies (Debian)
+        if: matrix.distro == 'debian'
+        run: |
+          set -eu
+          GETPM=apt-get isupg=false bash scripts/install-prereq.sh
+          GETPM=apt-get bash scripts/install-gost.sh
+          apt-get install -y python3 python3-pip
+          apt-get -y -t unstable install gcc g++ cargo rustc binutils
+          # fpm optional
+          apt-get install -y ruby ruby-dev squashfs-tools
+          gem install fpm --no-document
+
+      - name: Install build dependencies (Arch)
+        if: matrix.distro == 'arch'
+        run: |
+          set -euo pipefail
+          GETPM=pacman isupg=false bash scripts/install-prereq.sh
+          GETPM=pacman bash scripts/install-gost.sh
+          pacman -Sy --needed --noconfirm python python-pip cargo rustc
+          #fpm optional
+          pacman -Sy --needed --noconfirm ruby base-devel rpm-tools squashfs-tools
+          gem install fpm --no-document
+          if ! command -v fpm &>/dev/null; then
+            GEM_BIN="$(ruby -e 'puts Gem.bindir')"
+            export PATH="$PATH:$GEM_BIN"
+            for rc in \~/.bashrc \~/.zshrc \~/.profile; do
+              if [[ -f "$rc" ]]; then
+                if ! grep -q "Gem.bindir\|$GEM_BIN" "$rc" 2>/dev/null; then
+                  echo "export PATH=\"\$PATH:$GEM_BIN\"" >> "$rc"
+                fi
+              fi
+            done
+          fi
+
+      - name: Install build dependencies (AlmaLinux)
+        if: matrix.distro == 'almalinux'
+        run: |
+          set -euo pipefail
+          GETPM=dnf isupg=false bash scripts/install-prereq.sh
+          GETPM=dnf bash scripts/install-gost.sh
+          dnf -y install python3 python3-pip cargo rustc
+          #fpm optional
+          dnf -y install ruby ruby-devel rpm-build squashfs-tools libffi-devel
+          gem install fpm --no-document
+
+      - name: Build Node.js from upstream master commit
+        run: bash scripts/build.sh
+
+      - name: Test
+        run: bash scripts/test.sh
+
+      - name: Package
+        run: bash scripts/package.sh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@main
+        with:
+          name: node-${{ needs.resolve.outputs.build_id }}-${{ matrix.distro }}-${{ matrix.version }}
+          path: /work/out/*
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    needs: [resolve, build]
+    if: needs.resolve.outputs.should_build == 'true' && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@main
+        with:
+          path: artifacts
+
+      - name: Flatten artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          find artifacts -type f \( -name '*.deb' -o -name '*.rpm' -o -name '*.pkg.tar*' -o -name '*.tar.gz' -o -name '*.tar.zst' \) \
+            -exec cp -av {} release-assets/ \;
+          ls -la release-assets
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@master
+        with:
+          tag_name: ${{ needs.resolve.outputs.build_id }}
+          name: ${{ needs.resolve.outputs.version }}
+          body: |
+            Build of **Node.js** commit [`${{ needs.resolve.outputs.sha }}`](https://github.com/nodejs/node/commit/${{ needs.resolve.outputs.sha }}).
+
+            Distro matrix is resolved automatically (last + previous major for Debian & AlmaLinux, Arch rolling).
+
+            ### Packages
+            See assets below (`.deb` / `.rpm` / Arch).
+
+          files: release-assets/*
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
