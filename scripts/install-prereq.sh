@@ -81,5 +81,7 @@ elif [ "${GETPM}" == "dnf" ]; then
     grep -E '^gcc-toolset-[0-9]+$' | sort -V | tail -1)
   dnf -y install "$GCCLATEST" kernel-devel make git autoconf automake libtool git openssl openssl-devel cmake
   source /opt/rh/${GCCLATEST}/enable
+  echo "Using g++: $(which g++)"
+  g++ --version
 fi
 exit 0
