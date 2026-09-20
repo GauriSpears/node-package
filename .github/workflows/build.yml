@@ -136,7 +136,7 @@ jobs:
         run: |
           set -euo pipefail
           GETPM=pacman isupg=false bash scripts/install-prereq.sh
-          GETPM=pacman bash scripts/install-gost.sh
+          #GETPM=pacman bash scripts/install-gost.sh
           pacman -Sy --needed --noconfirm python python-pip cargo rustc
           #fpm optional
           pacman -Sy --needed --noconfirm ruby base-devel rpm-tools squashfs-tools
