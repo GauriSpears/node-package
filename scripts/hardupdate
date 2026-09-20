@@ -1,6 +1,7 @@
 #update package from experimental-unstable-testing-current
 #usage: getpack "package1 package2..." max_level #1-testing, 2-unstable, 3-experimental
 getpack() {
+set -v
   local pack=$1
   local maxlvl="${2:-0}"
   DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" install $pack
@@ -13,11 +14,13 @@ getpack() {
   if [ $maxlvl -ge 3 ]; then
     DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t experimental install $pack
   fi
+set +v
 }
 
 #reinstall package from experimental-unstable-testing-current
 #usage: forcepack "package1 package2..." max_level #1-testing, 2-unstable, 3-experimental
 forcepack() {
+set -v
   local pack=$1
   local maxlvl="${2:-0}"
   DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" reinstall $pack
@@ -30,4 +33,5 @@ forcepack() {
   if [ $maxlvl -ge 3 ]; then
     DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t experimental reinstall $pack
   fi
+set +v
 }
