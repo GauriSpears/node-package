@@ -160,27 +160,30 @@ jobs:
           #dnf -y install epel-release
           #dnf update
           #dnf -y install gcc-c++
-          echo dnf list available 'python3.[0-9]*' 2>/dev/null
-          echo dnf list available 'python3.[0-9]*' 2>/dev/null | \
-            grep -E '^python3\.[0-9]+ '
-          echo dnf list available 'python3.[0-9]*' 2>/dev/null | \
+          if ! command -v fpm &>/dev/null; then
+            echo "NOGREP"
+          fi
+          echo $(dnf list available 'python3.[0-9]*' 2>/dev/null)
+          echo $(dnf list available 'python3.[0-9]*' 2>/dev/null | \
+            grep -E '^python3\.[0-9]+ ')
+          echo $(dnf list available 'python3.[0-9]*' 2>/dev/null | \
             grep -E '^python3\.[0-9]+ ' | \
-            sort -V
-          echo dnf list available 'python3.[0-9]*' 2>/dev/null | \
+            sort -V)
+          echo $(dnf list available 'python3.[0-9]*' 2>/dev/null | \
             grep -E '^python3\.[0-9]+ ' | \
             sort -V | \
-            tail -1
-          echo dnf list available 'python3.[0-9]*' 2>/dev/null | \
+            tail -1)
+          echo $(dnf list available 'python3.[0-9]*' 2>/dev/null | \
             grep -E '^python3\.[0-9]+ ' | \
             sort -V | \
             tail -1 | \
-            awk '{print $1}'
-          echo dnf list available 'python3.[0-9]*' 2>/dev/null | \
+            awk '{print $1}')
+          echo $(dnf list available 'python3.[0-9]*' 2>/dev/null | \
             grep -E '^python3\.[0-9]+ ' | \
             sort -V | \
             tail -1 | \
             awk '{print $1}' | \
-            sed 's/\.[^.]*$//'
+            sed 's/\.[^.]*$//')
           PYLATEST=$(dnf list available 'python3.[0-9]*' 2>/dev/null | \
             grep -E '^python3\.[0-9]+ ' | \
             sort -V | \
