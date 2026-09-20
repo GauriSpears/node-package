@@ -130,6 +130,7 @@ jobs:
           # fpm optional
           apt-get install -y -o Deps::Policy=force ruby ruby-dev squashfs-tools
           gem install fpm --no-document
+          exit 1
 
       - name: Install build dependencies (Arch)
         if: matrix.distro == 'arch'
@@ -139,19 +140,19 @@ jobs:
           #GETPM=pacman bash scripts/install-gost.sh
           pacman -Sy --needed --noconfirm python python-pip rust
           #fpm optional
-          pacman -Sy --needed --noconfirm ruby base-devel rpm-tools squashfs-tools
+          pacman -Sy --needed --noconfirm ruby rubygems base-devel rpm-tools squashfs-tools
           gem install fpm --no-document
-          if ! command -v fpm &>/dev/null; then
-            GEM_BIN="$(ruby -e 'puts Gem.bindir')"
-            export PATH="$PATH:$GEM_BIN"
-            for rc in \~/.bashrc \~/.zshrc \~/.profile; do
-              if [[ -f "$rc" ]]; then
-                if ! grep -q "Gem.bindir\|$GEM_BIN" "$rc" 2>/dev/null; then
-                  echo "export PATH=\"\$PATH:$GEM_BIN\"" >> "$rc"
-                fi
-              fi
-            done
-          fi
+          #if ! command -v fpm &>/dev/null; then
+          #  GEM_BIN="$(ruby -e 'puts Gem.bindir')"
+          #  export PATH="$PATH:$GEM_BIN"
+          #  for rc in \~/.bashrc \~/.zshrc \~/.profile; do
+          #    if [[ -f "$rc" ]]; then
+          #      if ! grep -q "Gem.bindir\|$GEM_BIN" "$rc" 2>/dev/null; then
+          #        echo "export PATH=\"\$PATH:$GEM_BIN\"" >> "$rc"
+          #      fi
+          #    fi
+          #  done
+          #fi
           fpm --help
           exit 1
 
@@ -161,10 +162,14 @@ jobs:
           set -euo pipefail
           GETPM=dnf isupg=false bash scripts/install-prereq.sh
           GETPM=dnf bash scripts/install-gost.sh
+          dnf -y install epel-release
+          dnf update
+          dnf -y install gcc-c++
           dnf -y install python3.14 python3-pip cargo rustc
           #fpm optional
           dnf -y install ruby ruby-devel rpm-build squashfs-tools libffi-devel
           gem install fpm --no-document
+          exit 1
 
       - name: Build Node.js from upstream master commit
         run: bash scripts/build.sh
