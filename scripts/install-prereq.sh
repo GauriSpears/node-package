@@ -80,16 +80,5 @@ elif [ "${GETPM}" == "dnf" ]; then
   GCCLATEST=$(dnf repoquery --available --qf '%{name}' 'gcc-toolset-[0-9]*' | \
     grep -E '^gcc-toolset-[0-9]+$' | sort -V | tail -1)
   dnf -y install "$GCCLATEST" kernel-devel make git autoconf automake libtool git openssl openssl-devel cmake
-  cat > /etc/profile.d/gcc-toolset-latest.sh << EOF
-# Auto-enable latest GCC Toolset
-if [ -f /opt/rh/${GCCLATEST}/enable ]; then
-  echo "AAAAAAA"
-  source /opt/rh/${GCCLATEST}/enable
-fi
-EOF
-  chmod 644 /etc/profile.d/gcc-toolset-latest.sh
-  if ! grep -q "gcc-toolset-latest" /etc/bashrc 2>/dev/null; then
-    echo '[ -f /etc/profile.d/gcc-toolset-latest.sh ] && source /etc/profile.d/gcc-toolset-latest.sh' >> /etc/bashrc
-  fi
 fi
 exit 0

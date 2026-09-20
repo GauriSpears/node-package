@@ -6,6 +6,12 @@ NODE_SHA="${NODE_SHA:?set NODE_SHA (full git commit on nodejs/node)}"
 BUILD_ROOT="${BUILD_ROOT:-$(pwd)/build}"
 SRC_DIR="${BUILD_ROOT}/node-src"
 
+if [ "${GETPM}" == "dnf" ]; then
+  if ls /opt/rh/gcc-toolset-*/enable >/dev/null 2>&1; then
+    source $(ls -1 /opt/rh/gcc-toolset-*/enable | sort -V | tail -1)
+  fi
+fi
+
 LIBSSLPATH=""
 for candidate in \
   /usr/lib64/libssl.so \
