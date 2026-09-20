@@ -152,7 +152,7 @@ jobs:
               fi
             done
           fi
-          fpm --help
+          fpm --version
           exit 1
 
       - name: Install build dependencies (AlmaLinux)
