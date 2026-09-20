@@ -157,13 +157,6 @@ jobs:
           set -euo pipefail
           GETPM=dnf isupg=false bash scripts/install-prereq.sh
           GETPM=dnf bash scripts/install-gost.sh
-          #dnf -y install grep
-          #dnf -y install epel-release
-          #dnf update
-          #dnf -y install gcc-c++
-          if ! command -v grep &>/dev/null; then
-            echo "NOGREP"
-          fi
           PYLATEST=$(dnf repoquery --available --qf '%{name}' 'python3.[0-9]*' | \
             grep -E '^python3\.[0-9]+$' | sort -V | tail -1)
           dnf install -y "$PYLATEST" python3-pip cargo rustc
