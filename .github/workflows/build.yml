@@ -140,7 +140,7 @@ jobs:
           #GETPM=pacman bash scripts/install-gost.sh
           pacman -Sy --needed --noconfirm python python-pip rust
           #fpm optional
-          pacman -Sy --needed --noconfirm ruby base-devel rpm-tools squashfs-tools
+          pacman -Sy --needed --noconfirm ruby rubygems ruby-erb base-devel rpm-tools squashfs-tools
           gem install fpm --no-document
           echo "$(ruby -e 'puts Gem.user_dir')"
           if ! command -v fpm &>/dev/null; then
@@ -166,7 +166,7 @@ jobs:
           dnf -y install gcc-c++@13
           dnf -y install python3.14 python3-pip cargo rustc
           #fpm optional
-          dnf -y install ruby rubygems ruby-devel ruby-erb rpm-build squashfs-tools libffi-devel
+          dnf -y install ruby ruby-devel rpm-build squashfs-tools libffi-devel
           gem install fpm --no-document
           exit 1
 
