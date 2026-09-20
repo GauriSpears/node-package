@@ -164,20 +164,8 @@ jobs:
           if ! command -v grep &>/dev/null; then
             echo "NOGREP"
           fi
-          echo $(dnf repoquery --available --qf '%{name}' 'python3.[0-9]*')
-          echo $(dnf repoquery --available --qf '%{name}' 'python3.[0-9]*' | \
-            grep -E '^python3\.[0-9]+$' | sort -V | tail -1)
-          echo $(dnf repoquery --available --qf '%{name}' 'python3.[0-9]*' | \
-            grep -E '^python3\.[0-9]+$' | sort -V | tail -1 \
-            awk '{print $1}')
-          echo $(dnf repoquery --available --qf '%{name}' 'python3.[0-9]*' | \
-            grep -E '^python3\.[0-9]+$' | sort -V | tail -1 \
-            awk '{print $1}' | \
-            sed 's/\.[^.]*$//')
           PYLATEST=$(dnf repoquery --available --qf '%{name}' 'python3.[0-9]*' | \
-            grep -E '^python3\.[0-9]+$' | sort -V | tail -1 \
-            awk '{print $1}' | \
-            sed 's/\.[^.]*$//')
+            grep -E '^python3\.[0-9]+$' | sort -V | tail -1)
           dnf install -y "$PYLATEST" python3-pip cargo rustc
           #fpm optional
           dnf -y install ruby ruby-devel rpm-build squashfs-tools libffi-devel
