@@ -77,6 +77,8 @@ elif [ "${GETPM}" == "dnf" ]; then
   dnf -y install epel-release
   dnf -y groupinstall "Development Tools"
   dnf -y update
-  dnf -y install gcc gcc-c++ kernel-devel make git autoconf automake libtool git openssl openssl-devel cmake
+  GCCLATEST=$(dnf repoquery --available --qf '%{name}' 'gcc-toolset-[0-9]*' | \
+    grep -E '^gcc-toolset-[0-9]+$' | sort -V | tail -1)
+  dnf -y install $"GCCLATEST" kernel-devel make git autoconf automake libtool git openssl openssl-devel cmake
 fi
 exit 0
