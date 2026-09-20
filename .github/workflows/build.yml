@@ -2,8 +2,8 @@ name: Build Node.JS (upstream master)
 
 on:
   schedule:
-    # Weekly Monday 03:15 UTC
-    - cron: '45 3 * * 1'
+    # Weekly Sunday 20:00 UTC
+    - cron: '00 20 * * 0'
   workflow_dispatch:
     inputs:
       node_sha:
