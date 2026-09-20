@@ -83,6 +83,7 @@ elif [ "${GETPM}" == "dnf" ]; then
   cat > /etc/profile.d/gcc-toolset-latest.sh << EOF
 # Auto-enable latest GCC Toolset
 if [ -f /opt/rh/${GCCLATEST}/enable ]; then
+  echo "AAAAAAA"
   source /opt/rh/${GCCLATEST}/enable
 fi
 EOF
