@@ -157,6 +157,7 @@ jobs:
           set -euo pipefail
           GETPM=dnf isupg=false bash scripts/install-prereq.sh
           GETPM=dnf bash scripts/install-gost.sh
+          dnf -y install grep
           #dnf -y install epel-release
           #dnf update
           #dnf -y install gcc-c++
