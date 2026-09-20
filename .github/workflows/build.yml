@@ -107,7 +107,7 @@ jobs:
       options: --user root
 
     env:
-      node_sha: ${{ needs.resolve.outputs.sha }}
+      NODE_SHA: ${{ needs.resolve.outputs.sha }}
       BUILD_ID: ${{ needs.resolve.outputs.build_id }}
       VERSION: ${{ needs.resolve.outputs.version }}
       DISTRO: ${{ matrix.distro }}
@@ -152,6 +152,8 @@ jobs:
               fi
             done
           fi
+          fpm --help
+          exit 1
 
       - name: Install build dependencies (AlmaLinux)
         if: matrix.distro == 'almalinux'
