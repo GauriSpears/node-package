@@ -45,9 +45,9 @@ EOF
     rm -rf /usr/local/ssl/lib
     rm -rf /root/openssl
     rm -rf /usr/bin/openssl
-    forcepack "openssl libssl3t64 libssl-dev" 2
+    forcepack "openssl libssl-dev" 2
   else
-    getpack "openssl libssl3t64 libssl-dev" 2
+    getpack "openssl libssl-dev" 2
   fi
   if ! $isupg; then
     rm -rf /usr/local/doc/cmake-*
