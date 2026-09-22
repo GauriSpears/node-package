@@ -126,7 +126,9 @@ jobs:
           GETPM=apt-get isupg=false bash scripts/install-prereq.sh
           GETPM=apt-get bash scripts/install-gost.sh
           apt-get install -y python3 python3-pip
-          apt-get -y -t unstable install gcc g++ cargo rustc binutils
+          . "scripts/hardupdate"
+          #apt-get -y -t unstable install gcc g++ cargo rustc binutils
+          getpack "gcc g++ cargo rustc binutils" 2 install
           # fpm optional
           apt-get install -y ruby ruby-dev squashfs-tools
           gem install fpm --no-document
