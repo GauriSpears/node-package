@@ -2,13 +2,13 @@
 tryinstall() {
   local pack=$1
   local lvl="${2:-0}"
-  if [ $lvl == 0 ]; then
+  if [ $lvl = 0 ]; then
     lvl=
-  elif [ $lvl == 1 ]; then
+  elif [ $lvl = 1 ]; then
     lvl="-t testing "
-  elif [ $lvl == 2 ]; then
+  elif [ $lvl = 2 ]; then
     lvl="-t unstable "
-  elif [ $lvl == 3 ]; then
+  elif [ $lvl = 3 ]; then
     lvl="-t experimental "
   fi
   local opr="${3:-install}"
