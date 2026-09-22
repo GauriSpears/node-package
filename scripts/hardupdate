@@ -37,7 +37,7 @@ getpack() {
     local prev_pkg=
     while true; do
       echo "" >"$LOG"
-      if tryinstall $pack $i $opr; then
+      if tryinstall "$pack" "$i" "$opr"; then
         break
       else
         if ! grep -q 'Depends:.*but .* is to be installed' "$LOG" || [ $idep -gt $maxlvl ]; then
