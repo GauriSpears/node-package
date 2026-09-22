@@ -1,43 +1,62 @@
+#usage: tryinstall mypackage 0/1/2/3 install/reinstall
+tryinstall() {
+  local pack=$1
+  local lvl="${2:-0}"
+  if [ $lvl == 0 ]; then
+    lvl=
+  elif [ $lvl == 1 ]; then
+    lvl="-t testing "
+  elif [ $lvl == 2 ]; then
+    lvl="-t unstable "
+  elif [ $lvl == 3 ]; then
+    lvl="-t experimental "
+  fi
+  local opr="${3:-install}"
+  if DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" $lvl$opr $pack >"$LOG" 2>&1; then
+    echo "Success: $pkg из $lvl"
+    return 0
+  else
+    echo "Fail $pkg из $lvl"
+    return 1
+  fi
+}
+LOG=$(mktemp)
+trap 'rm -f "$LOG"' EXIT
 #update package from experimental-unstable-testing-current
-#usage: getpack "package1 package2..." max_level #1-testing, 2-unstable, 3-experimental
+#usage: getpack "package1 package2..." max_level operation #level:1-testing, 2-unstable, 3-experimental; operation:install/reinstall
 getpack() {
   local pack=$1
   local maxlvl="${2:-0}"
-  DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" install $pack
-  if [ $maxlvl -ge 1 ]; then
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t testing install $pack
-  fi
-  if [ $maxlvl -ge 2 ]; then
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t unstable install $pack
-  fi
-  if [ $maxlvl -ge 3 ]; then
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t experimental install $pack
-  fi
-}
-
-#reinstall package from experimental-unstable-testing-current
-#usage: forcepack "package1 package2..." max_level #1-testing, 2-unstable, 3-experimental
-forcepack() {
-  local pack=$1
-  local maxlvl="${2:-0}"
-  echo "$pack"
-  apt show $pack
-  echo 'DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" reinstall ${pack}'
-  DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" reinstall $pack
-  apt show $pack
-  if [ $maxlvl -ge 1 ]; then
-    echo 'DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t testing reinstall $pack'
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t testing reinstall $pack
-    apt show $pack
-  fi
-  if [ $maxlvl -ge 2 ]; then
-    echo 'DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t unstable reinstall $pack'
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t unstable reinstall $pack
-    apt show $pack
-  fi
-  if [ $maxlvl -ge 3 ]; then
-    echo 'DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -t experimental reinstall $pack'
-    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" -t experimental reinstall $pack
-    apt show $pack
-  fi
+  local opr="${3:-install}"
+#apt show $pack
+  for i in {0..3}; do
+    if [ $i -gt $maxlvl ]; then
+      exit 0
+    fi
+    local idep=0
+    local prev_pkg=
+    while true; do
+      echo "" >"$LOG"
+      if tryinstall $pack $i $opr; then
+        break
+      else
+        if [ ! grep -q 'Depends:.*but .* is to be installed' "$LOG" || $idep -gt $maxlvl ]; then
+          cat "$LOG"
+          exit 1
+        else
+          conflict_pkg=$(grep -oP '^\s*\K\S+(?=\s*: Depends:)' "$LOG" | head -n1)
+          if [ "$conflict_pkg" != "$prev_pkg" ]
+            idep=0
+          else
+            idep=$((idep + 1))
+            if [ $idep -gt 3 ]; then
+              cat "$LOG"
+              exit 1
+            fi
+          fi
+          getpack "$conflict_pkg" $idep install
+        fi
+      fi
+    done
+  done
 }

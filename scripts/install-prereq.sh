@@ -45,9 +45,9 @@ EOF
     rm -rf /usr/local/ssl/lib
     rm -rf /root/openssl
     rm -rf /usr/bin/openssl
-    forcepack "openssl libssl-dev" 2
+    getpack "openssl libssl-dev" 2 reinstall
   else
-    getpack "openssl libssl-dev" 2
+    getpack "openssl libssl-dev" 2 install
   fi
   if ! $isupg; then
     rm -rf /usr/local/doc/cmake-*
@@ -64,9 +64,9 @@ EOF
     rm -rf /usr/local/share/bash-completion/completions/cpack
     rm -rf /usr/local/share/bash-completion/completions/ctest
     hash -r
-    forcepack cmake 3
+    getpack cmake 3 reinstall
   else
-    getpack cmake 3
+    getpack cmake 3 install
   fi
 elif [ "${GETPM}" == "pacman" ]; then
   pacman-key --init
