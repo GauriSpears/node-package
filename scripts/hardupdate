@@ -29,6 +29,7 @@ getpack() {
   local maxlvl="${2:-0}"
   local opr="${3:-install}"
 #apt show $pack
+  local i
   for i in {0..3}; do
     if [ $i -gt $maxlvl ]; then
       exit 0
