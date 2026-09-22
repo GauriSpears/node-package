@@ -13,10 +13,10 @@ tryinstall() {
   fi
   local opr="${3:-install}"
   if DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" $lvl$opr $pack >"$LOG" 2>&1; then
-    echo "Success: $pkg из $lvl"
+    echo "Success: $pkg $lvl"
     return 0
   else
-    echo "Fail $pkg из $lvl"
+    echo "Fail: $pkg $lvl"
     return 1
   fi
 }
@@ -45,8 +45,11 @@ getpack() {
           exit 1
         else
           conflict_pkg=$(grep -oP '^\s*\K\S+(?=\s*: Depends:)' "$LOG" | head -n1)
+          echo "!!!CONFLICT $conflict_pkg"
+          echo "!!!PREV $prev_pkg"
           if [ "$conflict_pkg" != "$prev_pkg" ]
             idep=0
+            prev_pkg=$conflict_pkg
           else
             idep=$((idep + 1))
             if [ $idep -gt 3 ]; then
