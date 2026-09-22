@@ -13,10 +13,10 @@ tryinstall() {
   fi
   local opr="${3:-install}"
   if DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" $lvl$opr $pack >"$LOG" 2>&1; then
-    echo "Success: $pkg $lvl"
+    echo "Success: $pack $lvl"
     return 0
   else
-    echo "Fail: $pkg $lvl"
+    echo "Fail: $pack $lvl"
     return 1
   fi
 }
@@ -40,14 +40,14 @@ getpack() {
       if tryinstall $pack $i $opr; then
         break
       else
-        if [ ! grep -q 'Depends:.*but .* is to be installed' "$LOG" || $idep -gt $maxlvl ]; then
+        if ! grep -q 'Depends:.*but .* is to be installed' "$LOG" || [ $idep -gt $maxlvl ]; then
           cat "$LOG"
           exit 1
         else
           conflict_pkg=$(grep -oP '^\s*\K\S+(?=\s*: Depends:)' "$LOG" | head -n1)
           echo "!!!CONFLICT $conflict_pkg"
           echo "!!!PREV $prev_pkg"
-          if [ "$conflict_pkg" != "$prev_pkg" ]
+          if [ "$conflict_pkg" != "$prev_pkg" ]; then
             idep=0
             prev_pkg=$conflict_pkg
           else
