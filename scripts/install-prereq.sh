@@ -28,9 +28,11 @@ Pin: release a=experimental
 Pin-Priority: -1
 EOF
   sed -i 's/^[[:space:]]*//' /etc/apt/preferences.d/gku.pref
+  apt-get update -y || true
+  apt-get install -y curl
   curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
   chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-  sh -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null'
+  sh -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null'
   apt update -y
   apt-get update -y
   apt-get install -y build-essential autoconf automake libtool git
