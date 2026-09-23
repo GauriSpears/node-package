@@ -14,9 +14,12 @@ tryinstall() {
   local opr="${3:-install}"
   if DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" $lvl$opr $pack >"$LOG" 2>&1; then
     echo "Success: $pack $lvl"
+    cat "$LOG"
     return 0
   else
     echo "Fail: $pack $lvl"
+    cat "$LOG"
+    echo "Trying fo fix"
     return 1
   fi
 }
@@ -41,17 +44,20 @@ getpack() {
         break
       else
         if ! grep -q 'Depends:.*but .* is to be installed' "$LOG" || [ $idep -gt $maxlvl ]; then
-          cat "$LOG"
+          echo "Can't fix this error type"
           exit 1
         else
           conflict_pkg=$(grep -oP '^\s*\K\S+(?=\s*: Depends:)' "$LOG" | head -n1)
+          echo "Trying to update ${conflict_pkg}"
+          echo "Previous fix was for ${prev_pkg}"
+          echo "$idep"
           if [ "$conflict_pkg" != "$prev_pkg" ]; then
             idep=0
             prev_pkg=$conflict_pkg
           else
             idep=$((idep + 1))
             if [ $idep -gt 3 ]; then
-              cat "$LOG"
+              cat "Installation of all dependency versions didn't help"
               exit 1
             fi
           fi
