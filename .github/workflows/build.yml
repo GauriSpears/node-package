@@ -130,7 +130,7 @@ jobs:
           #apt-get -y -t unstable install gcc g++ cargo rustc binutils
           getpack "gcc g++ cargo rustc binutils" 2 install
           # fpm optional
-          apt-get install -y ruby ruby-dev squashfs-tools
+          getpack "ruby ruby-dev squashfs-tools" 2 install
           gem install fpm --no-document
 
       - name: Install build dependencies (Arch)
