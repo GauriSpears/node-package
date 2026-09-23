@@ -38,7 +38,7 @@ jobs:
       - name: Install jq
         run: sudo apt-get update -y && sudo apt-get install -y --no-install-recommends jq curl ca-certificates
 
-      - name: Resolve nodejs/node master (or input SHA)
+      - name: Resolve nodejs/node main (or input SHA)
         id: up
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
