@@ -34,9 +34,12 @@ getpacki() {
     local prev_pkg=
     while true; do
       echo "" >"$LOG"
+echo "try install $pack $lvl $opr"
       if tryinstall "$pack" "$lvl" "$opr"; then
+echo "INSTALLED $pack $lvl $opr"
         break
       else
+echo "FAILED $pack $lvl $opr"
         if ! grep -q 'Depends:.*but .* is to be installed' "$LOG" || [ $idep -gt $maxlvl ]; then
           echo "Can't fix this error type"
           exit 1
@@ -46,6 +49,7 @@ getpacki() {
           echo "Previous fix was for ${prev_pkg}"
           echo "$idep"
           if [ "$conflict_pkg" = "$pack" ]; then
+echo "CONFLICT=PACK"
             return 1
           elif [ "$conflict_pkg" != "$prev_pkg" ]; then
             idep=0
