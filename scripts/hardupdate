@@ -19,7 +19,6 @@ tryinstall() {
   else
     echo "Fail: $pack $lvl"
     cat "$LOG"
-    echo "Trying fo fix"
     return 1
   fi
 }
@@ -29,42 +28,35 @@ getpacki() {
   local pack=$1
   local lvl="${2:-0}"
   local opr="${3:-install}"
-
-    local idep=0
-    local prev_pkg=
-    while true; do
-      echo "" >"$LOG"
-echo "try install $pack $lvl $opr"
-      if tryinstall "$pack" "$lvl" "$opr"; then
-echo "INSTALLED $pack $lvl $opr"
-        break
+  local idep=0
+  local prev_pkg=
+  while true; do
+    echo "" >"$LOG"
+    if tryinstall "$pack" "$lvl" "$opr"; then
+      break
+    else
+      if ! grep -q 'Depends:.*but .* is to be installed' "$LOG" || [ $idep -gt $maxlvl ]; then
+        echo "Can't fix this error type"
+        exit 1
       else
-echo "FAILED $pack $lvl $opr"
-        if ! grep -q 'Depends:.*but .* is to be installed' "$LOG" || [ $idep -gt $maxlvl ]; then
-          echo "Can't fix this error type"
-          exit 1
+        conflict_pkg=$(grep -oP '^\s*\K\S+(?=\s*: Depends:)' "$LOG" | head -n1)
+        if [ "$conflict_pkg" = "$pack" ]; then
+          break
+        elif [ "$conflict_pkg" != "$prev_pkg" ]; then
+          idep=0
+          prev_pkg=$conflict_pkg
         else
-          conflict_pkg=$(grep -oP '^\s*\K\S+(?=\s*: Depends:)' "$LOG" | head -n1)
-          echo "Trying to update ${conflict_pkg}"
-          echo "Previous fix was for ${prev_pkg}"
-          echo "$idep"
-          if [ "$conflict_pkg" = "$pack" ]; then
-echo "CONFLICT=PACK"
-            break
-          elif [ "$conflict_pkg" != "$prev_pkg" ]; then
-            idep=0
-            prev_pkg=$conflict_pkg
-          else
-            idep=$((idep + 1))
-            if [ $idep -gt 3 ]; then
-              cat "Installation of all dependency versions didn't help"
-              exit 1
-            fi
+          idep=$((idep + 1))
+          if [ $idep -gt 3 ]; then
+            cat "Installation of all dependency versions didn't help"
+            exit 1
           fi
-          getpacki "$conflict_pkg" $idep install
         fi
+        echo "Trying to fix"
+        getpacki "$conflict_pkg" $idep install
       fi
-    done
+    fi
+  done
 }
 #update package from experimental-unstable-testing-current
 #usage: getpack "package1 package2..." max_level operation #level:1-testing, 2-unstable, 3-experimental; operation:install/reinstall
