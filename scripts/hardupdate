@@ -50,7 +50,7 @@ echo "FAILED $pack $lvl $opr"
           echo "$idep"
           if [ "$conflict_pkg" = "$pack" ]; then
 echo "CONFLICT=PACK"
-            return 1
+            break
           elif [ "$conflict_pkg" != "$prev_pkg" ]; then
             idep=0
             prev_pkg=$conflict_pkg
