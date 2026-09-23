@@ -1,0 +1,75 @@
+#usage: tryinstall mypackage 0/1/2/3 install/reinstall
+tryinstall() {
+  local pack=$1
+  local lvl="${2:-0}"
+  if [ $lvl = 0 ]; then
+    lvl=
+  elif [ $lvl = 1 ]; then
+    lvl="-t testing "
+  elif [ $lvl = 2 ]; then
+    lvl="-t unstable "
+  elif [ $lvl = 3 ]; then
+    lvl="-t experimental "
+  fi
+  local opr="${3:-install}"
+  if DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" $lvl$opr $pack >"$LOG" 2>&1; then
+    echo "Success: $pack $lvl"
+    cat "$LOG"
+    return 0
+  else
+    echo "Fail: $pack $lvl"
+    cat "$LOG"
+    return 1
+  fi
+}
+LOG=$(mktemp)
+trap 'rm -f "$LOG"' EXIT
+getpacki() {
+  local pack=$1
+  local lvl="${2:-0}"
+  local opr="${3:-install}"
+  local idep=0
+  local prev_pkg=
+  while true; do
+    echo "" >"$LOG"
+    if tryinstall "$pack" "$lvl" "$opr"; then
+      break
+    else
+      if ! grep -q 'Depends:.*but .* is to be installed' "$LOG" || [ $idep -gt $maxlvl ]; then
+        echo "Can't fix this error type"
+        exit 1
+      else
+        conflict_pkg=$(grep -oP '^\s*\K\S+(?=\s*: Depends:)' "$LOG" | head -n1)
+        if [ "$conflict_pkg" = "$pack" ]; then
+          break
+        elif [ "$conflict_pkg" != "$prev_pkg" ]; then
+          idep=0
+          prev_pkg=$conflict_pkg
+        else
+          idep=$((idep + 1))
+          if [ $idep -gt 3 ]; then
+            cat "Installation of all dependency versions didn't help"
+            exit 1
+          fi
+        fi
+        echo "Trying to fix"
+        getpacki "$conflict_pkg" $idep install
+      fi
+    fi
+  done
+}
+#update package from experimental-unstable-testing-current
+#usage: getpack "package1 package2..." max_level operation #level:1-testing, 2-unstable, 3-experimental; operation:install/reinstall
+getpack() {
+  local pack=$1
+  local maxlvl="${2:-0}"
+  local opr="${3:-install}"
+  local i=0
+  while [ $i -le 3 ]; do
+    if [ $i -gt $maxlvl ]; then
+      return 0
+    fi
+    getpacki "$pack" "$i" "$opr"
+    i=$((i +1))
+  done
+}
