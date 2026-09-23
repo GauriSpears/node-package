@@ -49,6 +49,21 @@ EOF
   else
     getpack "openssl libssl-dev" 2 install
   fi
+  OPENSSLDIR=$(openssl version -a 2>/dev/null | sed -n 's/.*OPENSSLDIR: "\([^"]*\)".*/\1/p' || true)
+  if ! grep -q '^\s*\[nodejs_init\]' ${OPENSSLDIR}/openssl.cnf; then
+    cat >> ${OPENSSLDIR}/openssl.cnf << 'EOF'
+
+[nodejs_init]
+providers = provider_node_sect
+
+[provider_node_sect]
+gostprov = gostprov_sect
+default = gostprov_sect
+
+[gostprov_sect]
+activate = 1
+EOF
+  fi
   if ! $isupg; then
     rm -rf /usr/local/doc/cmake-*
     rm -rf /usr/local/bin/ccmake

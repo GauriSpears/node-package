@@ -28,11 +28,10 @@ getpack() {
   local pack=$1
   local maxlvl="${2:-0}"
   local opr="${3:-install}"
-#apt show $pack
   local i=0
   while [ $i -le 3 ]; do
     if [ $i -gt $maxlvl ]; then
-      exit 0
+      return 0
     fi
     local idep=0
     local prev_pkg=
@@ -46,8 +45,6 @@ getpack() {
           exit 1
         else
           conflict_pkg=$(grep -oP '^\s*\K\S+(?=\s*: Depends:)' "$LOG" | head -n1)
-          echo "!!!CONFLICT $conflict_pkg"
-          echo "!!!PREV $prev_pkg"
           if [ "$conflict_pkg" != "$prev_pkg" ]; then
             idep=0
             prev_pkg=$conflict_pkg
