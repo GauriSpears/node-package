@@ -45,7 +45,9 @@ getpacki() {
           echo "Trying to update ${conflict_pkg}"
           echo "Previous fix was for ${prev_pkg}"
           echo "$idep"
-          if [ "$conflict_pkg" != "$prev_pkg" ]; then
+          if [ "$conflict_pkg" = "$pack" ]; then
+            return 1
+          elif [ "$conflict_pkg" != "$prev_pkg" ]; then
             idep=0
             prev_pkg=$conflict_pkg
           else
