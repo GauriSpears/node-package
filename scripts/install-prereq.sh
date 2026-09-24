@@ -101,7 +101,7 @@ default = gostprov_sect
 activate = 1
 EOF
 )
-  sed -i "/^\[/i ${NODEJS_BLOCK}" "${OPENSSLDIR}/openssl.cnf"
+  awk -v insert="$NODEJS_BLOCK" '/^\[/{print insert} {print}' "${OPENSSLDIR}/openssl.cnf" > "${OPENSSLDIR}/openssl.new" && mv "${OPENSSLDIR}/openssl.new" "${OPENSSLDIR}/openssl.cnf" 
   echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
   cat "${OPENSSLDIR}/openssl.cnf"
 fi
