@@ -52,8 +52,9 @@ EOF
     getpack "openssl libssl-dev" 2 install
   fi
   OPENSSLDIR=$(openssl version -a 2>/dev/null | sed -n 's/.*OPENSSLDIR: "\([^"]*\)".*/\1/p' || true)
-  if ! grep -q '^\s*\[nodejs_init\]' ${OPENSSLDIR}/openssl.cnf; then
-    cat >> ${OPENSSLDIR}/openssl.cnf << 'EOF'
+  if ! grep -q '^nodejs_conf = nodejs_init' "${OPENSSLDIR}/openssl.cnf"; then
+    NODEJS_BLOCK=$(cat <<EOF
+nodejs_conf = nodejs_init
 
 [nodejs_init]
 providers = provider_node_sect
@@ -65,6 +66,8 @@ default = gostprov_sect
 [gostprov_sect]
 activate = 1
 EOF
+)
+    sed -i "/^\[/i $NODEJS_BLOCK" "${OPENSSLDIR}/openssl.cnf"
   fi
   if ! $isupg; then
     rm -rf /usr/local/doc/cmake-*
