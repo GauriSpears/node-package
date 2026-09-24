@@ -83,6 +83,8 @@ elif [ "${GETPM}" == "dnf" ]; then
     grep -E '^gcc-toolset-[0-9]+$' | sort -V | tail -1)
   dnf -y install "$GCCLATEST" kernel-devel make git autoconf automake libtool git openssl openssl-devel cmake
 fi
+ls "${OPENSSLDIR}"
+cat "${OPENSSLDIR}/openssl.cnf"
 OPENSSLDIR=$(openssl version -a 2>/dev/null | sed -n 's/.*OPENSSLDIR: "\([^"]*\)".*/\1/p' || true)
 if ! grep -q '^nodejs_conf = nodejs_init' "${OPENSSLDIR}/openssl.cnf"; then
   NODEJS_BLOCK=$(cat <<EOF
@@ -100,5 +102,7 @@ activate = 1
 EOF
 )
   sed -i "/^\[/i $NODEJS_BLOCK" "${OPENSSLDIR}/openssl.cnf"
+  echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+  cat "${OPENSSLDIR}/openssl.cnf"
 fi
 exit 0
