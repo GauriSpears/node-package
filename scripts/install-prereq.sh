@@ -101,7 +101,7 @@ default = gostprov_sect
 activate = 1
 EOF
 )
-  sed -i "/^\[/i\$NODEJS_BLOCK" "${OPENSSLDIR}/openssl.cnf"
+  sed -i "/^\[/i\${NODEJS_BLOCK}" "${OPENSSLDIR}/openssl.cnf"
   echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
   cat "${OPENSSLDIR}/openssl.cnf"
 fi
