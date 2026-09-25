@@ -1,4 +1,5 @@
 #!/bin/sh
+set -euo pipefail
 SCRIPT_DIR="$( cd "$( dirname "$( readlink -f "${BASH_SOURCE[0]}" )" )" && pwd )"
 . "$SCRIPT_DIR/hardupdate"
 #New installation or upgrade.
@@ -83,7 +84,7 @@ elif [ "${GETPM}" == "dnf" ]; then
     grep -E '^gcc-toolset-[0-9]+$' | sort -V | tail -1)
   dnf -y install "$GCCLATEST" kernel-devel make git autoconf automake libtool git openssl openssl-devel cmake
 fi
-OPENSSLDIR=$(openssl version -a 2>/dev/null | sed -n 's/.*OPENSSLDIR: "\([^"]*\)".*/\1/p' || true)
+OPENSSLDIR=$(openssl version -a | sed -n 's/.*OPENSSLDIR: "\([^"]*\)".*/\1/p')
 if ! grep -q '^nodejs_conf = nodejs_init' "${OPENSSLDIR}/openssl.cnf"; then
   NODEJS_BLOCK="nodejs_conf = nodejs_init
 
