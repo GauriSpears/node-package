@@ -50,3 +50,4 @@ echo "==> Building"
 make
 echo "==> Build finished"
 ./out/Release/node -p "process.versions"
+exit 0
