@@ -87,3 +87,4 @@ items=$(jq -c '. + [{distro:"arch", version:"rolling", image:"archlinux:latest",
 items=$(jq -c 'unique_by(.distro + "-" + .version)' <<<"$items")
 
 echo "$items"
+exit 0
