@@ -48,6 +48,7 @@ getasset() {
         echo "$ver $url"
       done | sort -n
     )
+    ASSET_URL=
     if [ -n "${MAJOR_VERSION}" ]; then
       for entry in "${AVAILABLE[@]}"; do
         ver=${entry%% *}
