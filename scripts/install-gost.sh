@@ -1,6 +1,7 @@
 #!/bin/sh
 set -euo pipefail
 GETPM=${GETPM:?}
+IVERSION=
 #Determine existing package version
 getpackver() {
   if [ "${GETPM}" == "apt-get" ]; then
