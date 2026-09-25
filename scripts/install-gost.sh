@@ -76,6 +76,7 @@ getasset() {
 
 #Get OS version
 if [ "${GETPM}" == "apt-get" ]; then
+  VERSION_ID=
   source /etc/os-release
   if [ -n "${VERSION_ID}" ]; then
     MAJOR_VERSION="${VERSION_ID%%.*}"
@@ -114,6 +115,8 @@ elif [ "${GETPM}" == "pacman" ]; then
   MAJOR_VERSION=
   LINK_TMPLT="arch-rolling"
 elif [ "${GETPM}" == "dnf" ]; then
+  VERSION_ID=
+  source /etc/os-release
   if [ -n "${VERSION_ID}" ]; then
     MAJOR_VERSION="${VERSION_ID%%.*}"
   fi
