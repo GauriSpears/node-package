@@ -145,11 +145,7 @@ jobs:
           if ! command -v fpm &>/dev/null; then
             GEM_HOME="$(ruby -e 'puts Gem.user_dir')/bin"
             export PATH="$PATH:$GEM_HOME"
-            for rc in ~/.bashrc ~/.zshrc ~/.profile; do
-              if [ -f "$rc" ]; then
-                echo "export PATH=\"\$PATH:$GEM_HOME\"" >> "$rc"
-              fi
-            done
+            echo "PATH=$PATH" >> "$GITHUB_ENV"
           fi
           gem install fpm --no-document
 
