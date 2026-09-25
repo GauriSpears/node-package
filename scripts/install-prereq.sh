@@ -84,8 +84,6 @@ elif [ "${GETPM}" == "dnf" ]; then
   dnf -y install "$GCCLATEST" kernel-devel make git autoconf automake libtool git openssl openssl-devel cmake
 fi
 OPENSSLDIR=$(openssl version -a 2>/dev/null | sed -n 's/.*OPENSSLDIR: "\([^"]*\)".*/\1/p' || true)
-ls "${OPENSSLDIR}"
-cat "${OPENSSLDIR}/openssl.cnf"
 if ! grep -q '^nodejs_conf = nodejs_init' "${OPENSSLDIR}/openssl.cnf"; then
   NODEJS_BLOCK="nodejs_conf = nodejs_init
 
@@ -106,7 +104,5 @@ activate = 1
     {print}
   ' "${OPENSSLDIR}/openssl.cnf" > "${OPENSSLDIR}/openssl.new" \
   && mv "${OPENSSLDIR}/openssl.new" "${OPENSSLDIR}/openssl.cnf" 
-  echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-  cat "${OPENSSLDIR}/openssl.cnf"
 fi
 exit 0
