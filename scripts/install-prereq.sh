@@ -102,7 +102,7 @@ activate = 1
 
 EOF
 )
-  awk -v insert="$NODEJS_BLOCK" '/^\[/ $$ !inserted {
+  awk -v insert="$NODEJS_BLOCK" '/^\[/ && !inserted {
       print insert
       inserted = 1
     }
