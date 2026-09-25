@@ -56,3 +56,4 @@ if (h.length !== 64) throw new Error("md_gost12_256 failed");
 '
 
 echo "==> All tests passed"
+exit 0
