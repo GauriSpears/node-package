@@ -16,3 +16,4 @@ BUILD_ID="main-${SHORT}"
 echo "sha=$SHA"
 echo "short=$SHORT"
 echo "build_id=$BUILD_ID"
+exit 0
