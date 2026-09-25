@@ -87,8 +87,7 @@ OPENSSLDIR=$(openssl version -a 2>/dev/null | sed -n 's/.*OPENSSLDIR: "\([^"]*\)
 ls "${OPENSSLDIR}"
 cat "${OPENSSLDIR}/openssl.cnf"
 if ! grep -q '^nodejs_conf = nodejs_init' "${OPENSSLDIR}/openssl.cnf"; then
-  NODEJS_BLOCK=$(cat <<EOF
-nodejs_conf = nodejs_init
+  NODEJS_BLOCK="nodejs_conf = nodejs_init
 
 [nodejs_init]
 providers = provider_node_sect
@@ -99,9 +98,7 @@ default = gostprov_sect
 
 [gostprov_sect]
 activate = 1
-
-EOF
-)
+"
   awk -v insert="$NODEJS_BLOCK" '/^\[/ && !inserted {
       print insert
       inserted = 1
