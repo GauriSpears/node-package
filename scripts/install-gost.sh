@@ -21,6 +21,7 @@ getpackver() {
 #Find suitable package from github release and install it
 getasset() {
   API_URL="https://api.github.com/repos/${REPO}/releases/latest"
+echo"!!!${API_URL}"
   RELEASE_JSON=$(curl -fsSL "$API_URL")
   #Existing version check.
   getpackver
@@ -55,6 +56,7 @@ getasset() {
       ASSET_URL=${last#* }
     fi
     FILENAME=$(basename "$ASSET_URL")
+    echo "!!!!${$ASSET_URL}"
     curl -fsSL -o "$TMP_DIR/$FILENAME" "$ASSET_URL"
     if [ "${GETPM}" == "apt-get" ]; then
       apt-get install -y "$TMP_DIR/$FILENAME"
