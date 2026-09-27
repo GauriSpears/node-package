@@ -10,8 +10,8 @@ SRC_DIR="${BUILD_ROOT}/node-src"
 NODE_BIN="$SRC_DIR/out/Release/node"
 OUT="${OUT_DIR:-$(pwd)/out}"
 PREFIX="${PREFIX:-/usr}"
-# Version string for packages: YYYY.mm.dd-<sha12> (valid enough for fpm/dpkg)
-VERSION="${VERSION:-$(date +'%Y.%m.%d')-${NODE_SHA:0:12}}"
+VERSION="${VERSION:-$(date +'%Y.%m.%d')}"
+REVISION="${REVISION:-1}"
 ARCH="$(uname -m)"
 case "$ARCH" in
   x86_64) DEB_ARCH=amd64; RPM_ARCH=x86_64 ;;
@@ -40,7 +40,7 @@ package_deb() {
       fi
     done | sort -u | paste -sd ',' -)
   if command -v fpm >/dev/null 2>&1; then
-    fpm -s dir -t deb -n "$PKG_NAME" -v "$VERSION" \
+    fpm -s dir -t deb -n "$PKG_NAME" -v "$VERSION" --iteration "$REVISION" \
       -a "$DEB_ARCH" --description "$DESCRIPTION" --url "https://github.com/GauriSpears/nodejs-package" \
       --depends "$DEPS" -C "$STAGE" usr
     for f in ${PKG_NAME}_*.deb; do mv -f "$f" "$OUT/${f%_${DEB_ARCH}.deb}-debian-${suite}_${DEB_ARCH}.deb"; done
@@ -54,12 +54,12 @@ Version: $VERSION
 Section: libs
 Priority: optional
 Architecture: $DEB_ARCH
-Maintainer: nodejs-package CI <ci@localhost>
+Maintainer: nodejs-package
 Depends: $DEPS
 Installed-Size: ${size:-1}
 Description: $DESCRIPTION
 CTRL
-    dpkg-deb --build "$STAGE" "$OUT/${PKG_NAME}_${VERSION}-debian-${suite}_${DEB_ARCH}.deb"
+    dpkg-deb --build "$STAGE" "$OUT/${PKG_NAME}_${VERSION}-${REVISION}-debian-${suite}_${DEB_ARCH}.deb"
   fi
 }
 
@@ -73,13 +73,13 @@ package_rpm() {
       fi
     done | sort -u | paste -sd ', ' -)
   if command -v fpm >/dev/null 2>&1; then
-    fpm -s dir -t rpm -n "$PKG_NAME" -v "$VERSION" --iteration 1 \
+    fpm -s dir -t rpm -n "$PKG_NAME" -v "$VERSION" --iteration "$REVISION" \
       -a "$RPM_ARCH" --description "$DESCRIPTION" --depends "$DEPS" \
       -C "$STAGE" usr
     for f in ${PKG_NAME}-*.rpm; do mv -f "$f" "$OUT/${f%.${RPM_ARCH}.rpm}-almalinux_${el}.${RPM_ARCH}.rpm"; done
   fi
   if ! ls "$OUT"/*.rpm >/dev/null 2>&1; then
-    tar -C "$STAGE" -czf "$OUT/${PKG_NAME}-${VERSION}-1-almalinux_${el}.${RPM_ARCH}.tar.gz" usr
+    tar -C "$STAGE" -czf "$OUT/${PKG_NAME}-${VERSION}-${REVISION}-almalinux_${el}.${RPM_ARCH}.tar.gz" usr
   fi
 }
 
@@ -92,15 +92,15 @@ package_arch() {
       fi
     done | sort -u | paste -sd ', ' -)
   if command -v fpm >/dev/null 2>&1; then
-    fpm -s dir -t pacman -n "$PKG_NAME" -v "$VERSION" \
+    fpm -s dir -t pacman -n "$PKG_NAME" -v "$VERSION" --iteration "$REVISION" \
       -a "$ARCH" --description "$DESCRIPTION" --depends "$DEPS" -C "$STAGE" usr
     for f in ${PKG_NAME}-*.pkg.tar*; do mv -f "$f" "$OUT/${f%-${ARCH}.pkg.tar.zst}-arch-rolling-${ARCH}.pkg.tar.zst"; done
   fi
   if ! ls "$OUT"/${PKG_NAME}-* >/dev/null 2>&1; then
     if command -v zstd >/dev/null; then
-      tar -C "$STAGE" -cf - usr | zstd -o "$OUT/${PKG_NAME}-${VERSION}-arch-rolling-${ARCH}.tar.zst"
+      tar -C "$STAGE" -cf - usr | zstd -o "$OUT/${PKG_NAME}-${VERSION}-${REVISION}-arch-rolling-${ARCH}.tar.zst"
     else
-      tar -C "$STAGE" -czf "$OUT/${PKG_NAME}-${VERSION}-arch-rolling-${ARCH}.tar.gz" usr
+      tar -C "$STAGE" -czf "$OUT/${PKG_NAME}-${VERSION}-${REVISION}-arch-rolling-${ARCH}.tar.gz" usr
     fi
   fi
 }
@@ -109,7 +109,7 @@ case "$DISTRO" in
   debian|ubuntu) package_deb ;;
   almalinux|rhel|fedora|centos) package_rpm ;;
   arch|archlinux) package_arch ;;
-  *) tar -C "$STAGE" -czf "$OUT/${PKG_NAME}-${BUILD_ID}-${DISTRO}-${ARCH}.tar.gz" usr ;;
+  *) tar -C "$STAGE" -czf "$OUT/${PKG_NAME}-${VERSION}-${REVISION}-${DISTRO}-${ARCH}.tar.gz" usr ;;
 esac
 
 ls -la "$OUT"
