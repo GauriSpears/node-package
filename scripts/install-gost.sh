@@ -13,17 +13,8 @@ getpackver() {
       IVERSION=$(pacman -Q "$PACKAGE" 2>/dev/null | awk '{print $2}')
     fi
   elif [ "${GETPM}" == "dnf" ]; then
-    #exact name
     if rpm -q "$PACKAGE" >/dev/null 2>&1; then
-      IVERSION=$(rpm -q --qf '%{IVERSION}-%{ITERATION}' "$PACKAGE" 2>/dev/null)
-    fi
-    # names starting with "PACKAGE-"
-    if ! [ -n "$IVERSION" ]; then
-      FOUND=$(rpm -qa --qf '%{NAME} %{IVERSION}-%{ITERATION}\n' 2>/dev/null | grep -E "^${PACKAGE}-[0-9]")
-      if [ -n "$FOUND" ]; then
-          REAL_NAME=$(echo "$FOUND" | head -n1 | awk '{print $1}')
-          IVERSION=$(echo "$FOUND" | head -n1 | awk '{print $2}')
-      fi
+      IVERSION=$(rpm -q --qf '%{VERSION}-%{RELEASE}' "$PACKAGE" 2>/dev/null)
     fi
   fi
 }
