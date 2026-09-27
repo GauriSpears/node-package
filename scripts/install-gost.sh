@@ -21,7 +21,6 @@ getpackver() {
 #Find suitable package from github release and install it
 getasset() {
   API_URL="https://api.github.com/repos/${REPO}/releases/latest"
-echo"!!!${API_URL}"
   RELEASE_JSON=$(curl -fsSL "$API_URL")
   #Existing version check.
   getpackver
