@@ -55,7 +55,7 @@ getasset() {
       ASSET_URL=${last#* }
     fi
     FILENAME=$(basename "$ASSET_URL")
-    echo "!!!!${$ASSET_URL}"
+    echo "!!!!${ASSET_URL}"
     curl -fsSL -o "$TMP_DIR/$FILENAME" "$ASSET_URL"
     if [ "${GETPM}" == "apt-get" ]; then
       apt-get install -y "$TMP_DIR/$FILENAME"
