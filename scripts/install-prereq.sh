@@ -80,9 +80,10 @@ elif [ "${GETPM}" == "dnf" ]; then
   dnf -y install epel-release
   dnf -y groupinstall "Development Tools"
   dnf -y update
+  dnf -y install policycoreutils
   GCCLATEST=$(dnf repoquery --available --qf '%{name}' 'gcc-toolset-[0-9]*' | \
     grep -E '^gcc-toolset-[0-9]+$' | sort -V | tail -1)
-  dnf -y install policycoreutils "$GCCLATEST" kernel-devel make git autoconf automake libtool git openssl openssl-devel cmake
+  dnf -y install "$GCCLATEST" kernel-devel make git autoconf automake libtool git openssl openssl-devel cmake
 fi
 OPENSSLDIR=$(openssl version -a | sed -n 's/.*OPENSSLDIR: "\([^"]*\)".*/\1/p')
 if ! grep -q '^nodejs_conf = nodejs_init' "${OPENSSLDIR}/openssl.cnf"; then
