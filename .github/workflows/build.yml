@@ -131,7 +131,6 @@ jobs:
           apt-get install -y python3 python3-pip
           . "scripts/hardupdate"
           #apt-get -y -t unstable install gcc g++ cargo rustc binutils
-          local gver
           for gver in $(apt-cache search --names-only '^gcc-[0-9]+$' | sed -n 's/^gcc-\([0-9]\+\).*/\1/p' | sort -nr); do
             if apt-cache madison "gcc-${gver}" | grep -qE '\s+(stable|testing|unstable)/'; then
               break
