@@ -131,7 +131,15 @@ jobs:
           apt-get install -y python3 python3-pip
           . "scripts/hardupdate"
           #apt-get -y -t unstable install gcc g++ cargo rustc binutils
-          getpack "gcc g++ cargo rustc binutils" 2 install
+          local gver
+          for gver in $(apt-cache search --names-only '^gcc-[0-9]+$' | sed -n 's/^gcc-\([0-9]\+\).*/\1/p' | sort -nr); do
+            if apt-cache madison "gcc-${gver}" | grep -qE '\s+(stable|testing|unstable)/'; then
+              break
+            fi
+          done
+          getpack "gcc-${gver} g++-${gver} gcc g++ cargo rustc cpp binutils libgcc-${gver}-dev libstdc++-${gver}-dev" 2 install
+          hash -r
+          update-alternatives --set c++ /usr/bin/g++
           # fpm optional
           getpack "ruby ruby-dev squashfs-tools" 0 install
           gem install fpm --no-document
@@ -166,7 +174,14 @@ jobs:
           gem install fpm --no-document
 
       - name: Build Node.js from upstream master commit
-        run: GETPM=dnf bash scripts/build.sh
+        run: |
+          set -euo pipefail
+          case "${matrix.distro}" in
+            almalinux) export GETPM=dnf ;;
+            debian) export GETPM=apt-get ;;
+            arch) export GETPM=pacman ;;
+          esac
+          bash scripts/build.sh
 
       - name: Test
         run: bash scripts/test.sh
