@@ -6,9 +6,18 @@ NODE_SHA="${NODE_SHA:?set NODE_SHA (full git commit on nodejs/node)}"
 BUILD_ROOT="${BUILD_ROOT:-$(pwd)/build}"
 SRC_DIR="${BUILD_ROOT}/node-src"
 
+export CC="${CC:-gcc}"
+export CXX="${CXX:-g++}"
+
+unset LDFLAGS CFLAGS CXXFLAGS CPPFLAGS
+export LDFLAGS=""
+export CFLAGS=""
+export CXXFLAGS=""
+
 if [ "${GETPM}" == "dnf" ]; then
   if ls /opt/rh/gcc-toolset-*/enable >/dev/null 2>&1; then
     source $(ls -1 /opt/rh/gcc-toolset-*/enable | sort -V | tail -1)
+    export CC=gcc CXX=g++
   fi
 fi
 
@@ -47,7 +56,7 @@ echo "==> Building commit $(git rev-parse HEAD)"
 echo "==> Configuring --shared-openssl"
 ./configure --shared-openssl --shared-openssl-libpath="$LIBSSLPATH" --shared-openssl-includes=/usr/include
 echo "==> Building"
-make
+make CC="$CC" CXX="$CXX"
 echo "==> Build finished"
 ./out/Release/node -p "process.versions"
 exit 0
