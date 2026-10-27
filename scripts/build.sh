@@ -54,9 +54,13 @@ git checkout --force "$NODE_SHA" 2>/dev/null \
 
 echo "==> Building commit $(git rev-parse HEAD)"
 echo "==> Configuring --shared-openssl"
-./configure --shared-openssl --shared-openssl-libpath="$LIBSSLPATH" --shared-openssl-includes=/usr/include
+./configure \
+  --shared-openssl \
+  --shared-openssl-libpath="$LIBSSLPATH" \
+  --shared-openssl-includes=/usr/include \
+  --shared-openssl-libname=crypto,ssl
 echo "==> Building"
-make V=1 CC="$CC" CXX="$CXX"
+make CC="$CC" CXX="$CXX"
 echo "==> Build finished"
 ./out/Release/node -p "process.versions"
 exit 0
