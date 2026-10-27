@@ -174,8 +174,8 @@ jobs:
 
       - name: Build Node.js from upstream master commit
         run: |
-          set -euo pipefail
-          case "${matrix.distro}" in
+          set -eu
+          case "${{ matrix.distro }}" in
             almalinux) export GETPM=dnf ;;
             debian) export GETPM=apt-get ;;
             arch) export GETPM=pacman ;;
