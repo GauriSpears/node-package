@@ -17,7 +17,8 @@ export CXXFLAGS=""
 if [ "${GETPM}" == "dnf" ]; then
   if ls /opt/rh/gcc-toolset-*/enable >/dev/null 2>&1; then
     source $(ls -1 /opt/rh/gcc-toolset-*/enable | sort -V | tail -1)
-    export CC=gcc CXX=g++
+    export CC="$(command -v gcc)"
+    export CXX="$(command -v g++)"
   fi
 fi
 
