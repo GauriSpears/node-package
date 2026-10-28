@@ -23,8 +23,18 @@ mkdir -p "$OUT"
 STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT
 
+export CC="${CC:-gcc}"
+export CXX="${CXX:-g++}"
+if [ "${DISTRO}" == "almalinux" ]; then
+  if ls /opt/rh/gcc-toolset-*/enable >/dev/null 2>&1; then
+    source $(ls -1 /opt/rh/gcc-toolset-*/enable | sort -V | tail -1)
+    export CC="$(command -v gcc)"
+    export CXX="$(command -v g++)"
+  fi
+fi
+
 echo "==> Staging into $STAGE$PREFIX"
-make -C "$SRC_DIR" install DESTDIR="$STAGE" PREFIX="$PREFIX" || true
+make -C "$SRC_DIR" install DESTDIR="$STAGE" PREFIX="$PREFIX" CC="$CC" CXX="$CXX"
 install -Dm755 "$NODE_BIN" "$STAGE$PREFIX/bin/node"
 
 PKG_NAME="nodejs-shared"
